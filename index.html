@@ -1375,9 +1375,24 @@
                         </div>
                     </div>
                     
-                    <button class="btn summary-btn" id="send-summary">
-                        <i class="fas fa-paper-plane"></i> Submit Daily Summary to CEO
-                    </button>
+                    <!-- Formspree Form for Email Submission -->
+                    <form action="https://formspree.io/f/xblyakbv" method="POST">
+                        <input type="hidden" name="Representative" id="form-rep">
+                        <input type="hidden" name="Date" id="form-date">
+                        <input type="hidden" name="Total Calls" id="form-calls">
+                        <input type="hidden" name="Total Texts" id="form-texts">
+                        <input type="hidden" name="Call Responses" id="form-call-responses">
+                        <input type="hidden" name="Text Responses" id="form-text-responses">
+                        <input type="hidden" name="Mentorship Signups" id="form-signups">
+                        <input type="hidden" name="Conversions" id="form-conversions">
+                        <input type="hidden" name="HFM Signups" id="form-hfm-signups">
+                        <input type="hidden" name="Deriv Signups" id="form-deriv-signups">
+                        <input type="hidden" name="Notes" id="form-notes">
+                        
+                        <button type="submit" class="btn summary-btn">
+                            <i class="fas fa-paper-plane"></i> Submit Daily Summary to CEO
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -1635,20 +1650,60 @@
             alert(`Daily summary saved for ${rep}:\nCalls: ${calls}\nTexts: ${texts}\nCall Responses: ${callResponses}\nText Responses: ${textResponses}\nSignups: ${signups}\nConversions: ${conversions}\nHFM Signups: ${hfmSignups}\nDeriv Signups: ${derivSignups}`);
         });
         
-        // Submit summary to CEO
-        document.getElementById('send-summary').addEventListener('click', function() {
-            const rep = document.getElementById('rep-select').value;
-            const notification = document.getElementById('notification');
+        // Formspree submission handling
+        document.querySelector('form').addEventListener('submit', function(e) {
+            // Prevent default form submission
+            e.preventDefault();
             
+            // Capture form data
+            document.getElementById('form-rep').value = 
+                document.getElementById('rep-select').value;
+            document.getElementById('form-date').value = 
+                document.getElementById('current-date').textContent;
+            document.getElementById('form-calls').value = 
+                document.getElementById('calls-input').value || 0;
+            document.getElementById('form-texts').value = 
+                document.getElementById('texts-input').value || 0;
+            document.getElementById('form-call-responses').value = 
+                document.getElementById('call-responses-input').value || 0;
+            document.getElementById('form-text-responses').value = 
+                document.getElementById('text-responses-input').value || 0;
+            document.getElementById('form-signups').value = 
+                document.getElementById('signups-input').value || 0;
+            document.getElementById('form-conversions').value = 
+                document.getElementById('conversions-input').value || 0;
+            document.getElementById('form-hfm-signups').value = 
+                document.getElementById('hfm-signups-input').value || 0;
+            document.getElementById('form-deriv-signups').value = 
+                document.getElementById('deriv-signups-input').value || 0;
+            document.getElementById('form-notes').value = 
+                document.getElementById('bulk-notes').value || 'No notes';
+            
+            // Show notification
+            const notification = document.getElementById('notification');
             notification.classList.add('show');
             
-            // Hide after 5 seconds
+            // Submit the form
+            fetch(this.action, {
+                method: 'POST',
+                body: new FormData(this),
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Form submitted successfully');
+                } else {
+                    console.error('Form submission failed');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+            
+            // Hide notification after 5 seconds
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 5000);
-            
-            // In a real implementation, this would trigger an email to the CEO
-            console.log(`Sending ${rep}'s daily summary to trade2retire95@gmail.com`);
         });
     </script>
 </body>
