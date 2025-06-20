@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade2Retire | KCP Performance Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-blue: #0056b3;
+            --secondary-yellow: #ffd700;
+            --accent-blue: #007bff;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --hfm-color: #6f42c1;
+            --deriv-color: #e83e8c;
+            --conversion-color: #17a2b8;
+            --dark-bg: #0a192f;
+            --card-bg: #112240;
+            --white: #ffffff;
+            --light-gray: #e6f1ff;
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--dark-bg), #0c2a4d);
+            color: var(--light-gray);
+            min-height: 100vh;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: rgba(17, 34, 64, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo {
+            background: linear-gradient(135deg, var(--primary-blue), var(--accent-blue));
+            width: 70px;
+            height: 70px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--white);
+            box-shadow: 0 8px 20px rgba(0, 91, 234, 0.4);
+            transition: var(--transition);
+        }
+        
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        
+        .company-info h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 32px;
+            background: linear-gradient(to right, var(--white), var(--secondary-yellow));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 5px;
+        }
+        
+        .company-info p {
+            color: #64ffda;
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+        
+        .date-display {
+            background: linear-gradient(135deg, var(--secondary-yellow), #e6c200);
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+            color: #333;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .dashboard-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(100, 255, 218, 0.2);
+        }
+        
+        .section-title i {
+            background: linear-gradient(135deg, var(--primary-blue), var(--accent-blue));
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: var(--white);
+            box-shadow: 0 5px 15px rgba(0, 91, 234, 0.4);
+        }
+        
+        .section-title h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 26px;
+            background: linear-gradient(to right, var(--white), #64ffda);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .reps-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .rep-card {
+            background: linear-gradient(145deg, #1a2a52, #0d1a30);
+            border-radius: 18px;
+            padding: 25px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        
+        .rep-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+        
+        .rep-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .rep-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-blue), var(--accent-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--white);
+            box-shadow: 0 8px 20px rgba(0, 91, 234, 0.4);
+            border: 2px solid rgba(100, 255, 218, 0.3);
+        }
+        
+        .rep-info h3 {
+            font-size: 22px;
+            color: var(--white);
+            margin-bottom: 8px;
+        }
+        
+        .rep-info p {
+            color: #64ffda;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            background: rgba(17, 34, 64, 0.6);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            transition: var(--transition);
+        }
+        
+        .stat-item:hover {
+            background: rgba(26, 42, 82, 0.8);
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--secondary-yellow);
+            margin-bottom: 5px;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #8892b0;
+            font-weight: 500;
+        }
+        
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .chart-card {
+            background: rgba(17, 34, 64, 0.6);
+            border-radius: 18px;
+            padding: 20px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+        
+        .chart-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .chart-header i {
+            color: #64ffda;
+            font-size: 20px;
+        }
+        
+        .chart-header h4 {
+            font-size: 18px;
+            color: var(--white);
+        }
+        
+        .chart-container {
+            height: 250px;
+            position: relative;
+        }
+        
+        .activity-log {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .activity-item {
+            background: rgba(17, 34, 64, 0.6);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 20px;
+            border-left: 4px solid var(--accent-blue);
+            transition: var(--transition);
+        }
+        
+        .activity-item:hover {
+            transform: translateX(5px);
+            background: rgba(26, 42, 82, 0.8);
+        }
+        
+        .activity-icon {
+            min-width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(0, 123, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: var(--accent-blue);
+        }
+        
+        .activity-details {
+            flex-grow: 1;
+        }
+        
+        .activity-header {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .activity-rep {
+            font-weight: 600;
+            color: var(--white);
+            font-size: 18px;
+        }
+        
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: var(--success);
+        }
+        
+        .status-inactive {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: var(--danger);
+        }
+        
+        .status-semi {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: var(--warning);
+        }
+        
+        .status-converted {
+            background-color: rgba(23, 162, 184, 0.2);
+            color: var(--conversion-color);
+        }
+        
+        .activity-content {
+            color: #a8b2d1;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .activity-footer {
+            display: flex;
+            justify-content: space-between;
+            color: #64ffda;
+            font-size: 13px;
+        }
+        
+        .broker-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .broker-card {
+            background: linear-gradient(145deg, #1a2a52, #0d1a30);
+            border-radius: 18px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            border-top: 4px solid;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            transition: var(--transition);
+        }
+        
+        .broker-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+        
+        .broker-card.hfm {
+            border-top-color: var(--hfm-color);
+        }
+        
+        .broker-card.deriv {
+            border-top-color: var(--deriv-color);
+        }
+        
+        .broker-card.conversion {
+            border-top-color: var(--conversion-color);
+        }
+        
+        .broker-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .broker-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .broker-icon.hfm {
+            background: linear-gradient(135deg, var(--hfm-color), #5a32a3);
+        }
+        
+        .broker-icon.deriv {
+            background: linear-gradient(135deg, var(--deriv-color), #d83178);
+        }
+        
+        .broker-icon.conversion {
+            background: linear-gradient(135deg, var(--conversion-color), #138496);
+        }
+        
+        .broker-title h3 {
+            font-size: 22px;
+            color: var(--white);
+            margin-bottom: 5px;
+        }
+        
+        .broker-title p {
+            color: #8892b0;
+            font-size: 14px;
+        }
+        
+        .broker-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .broker-stat {
+            background: rgba(17, 34, 64, 0.6);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+        
+        .broker-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--secondary-yellow);
+            margin-bottom: 5px;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .broker-stat-label {
+            font-size: 14px;
+            color: #8892b0;
+        }
+        
+        .input-section {
+            grid-column: span 2;
+        }
+        
+        .form-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        
+        .form-column {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .form-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: var(--white);
+            font-size: 16px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(17, 34, 64, 0.6);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 12px;
+            font-size: 16px;
+            color: var(--white);
+            transition: var(--transition);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+        }
+        
+        .phone-verification {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .verify-btn {
+            background: linear-gradient(135deg, var(--accent-blue), var(--primary-blue));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0 25px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .verify-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 91, 234, 0.4);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 16px 35px;
+            background: linear-gradient(135deg, var(--secondary-yellow), #e6c200);
+            color: #333;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+            font-family: 'Montserrat', sans-serif;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(255, 215, 0, 0.4);
+        }
+        
+        .summary-btn {
+            background: linear-gradient(135deg, var(--success), #1e7e34);
+            color: white;
+            margin-top: 20px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 20px;
+            background: rgba(255, 215, 0, 0.9);
+            color: #333;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            max-width: 500px;
+            transform: translateX(120%);
+            transition: transform 0.5s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .conversion-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: rgba(23, 162, 184, 0.2);
+            color: var(--conversion-color);
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        /* New styles for bulk activity */
+        .tabs-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-btn {
+            padding: 12px 25px;
+            background: rgba(17, 34, 64, 0.6);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 12px;
+            color: #a8b2d1;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent-blue), var(--primary-blue));
+            color: white;
+            border-color: var(--accent-blue);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .bulk-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .bulk-stat {
+            background: rgba(17, 34, 64, 0.6);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+        
+        .bulk-stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .bulk-stat-title {
+            font-weight: 600;
+            color: var(--white);
+        }
+        
+        .bulk-stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            text-align: center;
+            color: var(--secondary-yellow);
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .bulk-inputs {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .bulk-input {
+            flex: 1;
+            background: rgba(26, 42, 82, 0.6);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--white);
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        .bulk-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+        
+        .bulk-total {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #64ffda;
+        }
+        
+        .info-note {
+            background: rgba(100, 255, 218, 0.1);
+            border-left: 4px solid #64ffda;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            color: #a8b2d1;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 1200px) {
+            .form-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .bulk-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .logo-container {
+                justify-content: center;
+            }
+            
+            .reps-container, .broker-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .notification {
+                max-width: 90%;
+                left: 5%;
+                right: 5%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <div class="logo">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="company-info">
+                    <h1>Trade2Retire</h1>
+                    <p>KINGDOM CAPITAL PROJECT (KCP) PERFORMANCE DASHBOARD</p>
+                </div>
+            </div>
+            <div class="date-display">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="current-date">June 20, 2025</span>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <div class="dashboard-card">
+                <div class="section-title">
+                    <i class="fas fa-users"></i>
+                    <h2>Customer Representatives</h2>
+                </div>
+                
+                <div class="reps-container">
+                    <div class="rep-card">
+                        <div class="rep-header">
+                            <div class="rep-avatar">S</div>
+                            <div class="rep-info">
+                                <h3>Sophia</h3>
+                                <p>Senior Customer Rep</p>
+                            </div>
+                        </div>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-value">24</div>
+                                <div class="stat-label">Verified Calls</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">18</div>
+                                <div class="stat-label">Verified Texts</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">5</div>
+                                <div class="stat-label">Signups</div>
+                            </div>
+                        </div>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-value">12</div>
+                                <div class="stat-label">Active Clients</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">3</div>
+                                <div class="stat-label">Inactive</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">4</div>
+                                <div class="stat-label">Conversions</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="rep-card">
+                        <div class="rep-header">
+                            <div class="rep-avatar">S</div>
+                            <div class="rep-info">
+                                <h3>Stella</h3>
+                                <p>Customer Success Manager</p>
+                            </div>
+                        </div>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-value">16</div>
+                                <div class="stat-label">Verified Calls</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">22</div>
+                                <div class="stat-label">Verified Texts</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">7</div>
+                                <div class="stat-label">Signups</div>
+                            </div>
+                        </div>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-value">18</div>
+                                <div class="stat-label">Active Clients</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">5</div>
+                                <div class="stat-label">Inactive</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">6</div>
+                                <div class="stat-label">Conversions</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="rep-card">
+                        <div class="rep-header">
+                            <div class="rep-avatar">S</div>
+                            <div class="rep-info">
+                                <h3>Somto</h3>
+                                <p>Customer Support Lead</p>
+                            </div>
+                        </div>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-value">28</div>
+                                <div class="stat-label">Verified Calls</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">14</div>
+                                <div class="stat-label">Verified Texts</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">9</div>
+                                <div class="stat-label">Signups</div>
+                            </div>
+                        </div>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-value">22</div>
+                                <div class="stat-label">Active Clients</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">6</div>
+                                <div class="stat-label">Inactive</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">7</div>
+                                <div class="stat-label">Conversions</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section-title">
+                    <i class="fas fa-chart-bar"></i>
+                    <h2>Performance Analytics</h2>
+                </div>
+                
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <i class="fas fa-phone"></i>
+                            <h4>Contact Performance</h4>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="contactChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <i class="fas fa-signal"></i>
+                            <h4>Signup Conversion</h4>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="conversionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-card">
+                <div class="section-title">
+                    <i class="fas fa-history"></i>
+                    <h2>Recent Activities</h2>
+                </div>
+                
+                <div class="activity-log">
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="activity-details">
+                            <div class="activity-header">
+                                <span class="activity-rep">Sophia</span>
+                                <span class="status-badge status-active">Active</span>
+                                <span class="conversion-badge">Mentorship Paid</span>
+                            </div>
+                            <div class="activity-content">
+                                Called John Davidson to discuss advanced trading strategies. Client signed up for mentorship and made payment.
+                            </div>
+                            <div class="activity-footer">
+                                <span>+1 (555) 123-4567</span>
+                                <span>Today, 10:30 AM | Duration: 12 min</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-comment"></i>
+                        </div>
+                        <div class="activity-details">
+                            <div class="activity-header">
+                                <span class="activity-rep">Stella</span>
+                                <span class="status-badge status-semi">Semi-active</span>
+                            </div>
+                            <div class="activity-content">
+                                Sent Sarah Miller KCP resources and follow-up materials. Client requested Deriv platform information.
+                            </div>
+                            <div class="activity-footer">
+                                <span>+1 (555) 987-6543</span>
+                                <span>Today, 9:45 AM | SMS Confirmed</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-details">
+                            <div class="activity-header">
+                                <span class="activity-rep">Somto</span>
+                                <span class="status-badge status-inactive">Inactive</span>
+                                <span class="conversion-badge">Mentorship Paid</span>
+                            </div>
+                            <div class="activity-content">
+                                Signed up Michael Brown for HFM broker and mentorship program. Initial deposit and mentorship fee received.
+                            </div>
+                            <div class="activity-footer">
+                                <span>+1 (555) 456-7890</span>
+                                <span>Today, 9:15 AM | Account: HFM-789456</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    <h2>Performance Metrics</h2>
+                </div>
+                
+                <div class="broker-cards">
+                    <div class="broker-card hfm">
+                        <div class="broker-header">
+                            <div class="broker-icon hfm">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="broker-title">
+                                <h3>HFM Broker</h3>
+                                <p>High-Frequency Markets Platform</p>
+                            </div>
+                        </div>
+                        
+                        <div class="broker-stats">
+                            <div class="broker-stat">
+                                <div class="broker-stat-value">42</div>
+                                <div class="broker-stat-label">Total Signups</div>
+                            </div>
+                            <div class="broker-stat">
+                                <div class="broker-stat-value">12</div>
+                                <div class="broker-stat-label">This Month</div>
+                            </div>
+                            <div class="broker-stat">
+                                <div class="broker-stat-value">3</div>
+                                <div class="broker-stat-label">Today</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="broker-card deriv">
+                        <div class="broker-header">
+                            <div class="broker-icon deriv">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div class="broker-title">
+                                <h3>Deriv Broker</h3>
+                                <p>Derivatives Trading Platform</p>
+                            </div>
+                        </div>
+                        
+                        <div class="broker-stats">
+                            <div class="broker-stat">
+                                <div class="broker-stat-value">38</div>
+                                <div class="broker-stat-label">Total Signups</div>
+                            </div>
+                            <div class="broker-stat">
+                                <div class="broker-stat-value">10</div>
+                                <div class="broker-stat-label">This Month</div>
+                            </div>
+                            <div class="broker-stat">
+                                <div class="broker-stat-value">2</div>
+                                <div class="broker-stat-label">Today</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="broker-card conversion">
+                        <div class="broker-header">
+                            <div class="broker-icon conversion">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <div class="broker-title">
+                                <h3>Mentorship</h3>
+                                <p>Paid Program Conversions</p>
+                            </div>
+                        </div>
+                        
+                        <div class="broker-stats">
+                            <div class="broker-stat">
+                                <div class="broker-stat-value">21</div>
+                                <div class="broker-stat-label">Total Conversions</div>
+                            </div>
+                            <div class="broker-stat">
+                                <div class="broker-stat-value">5</div>
+                                <div class="broker-stat-label">This Month</div>
+                            </div>
+                            <div class="broker-stat">
+                                <div class="broker-stat-value">3</div>
+                                <div class="broker-stat-label">Today</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-section">
+                <div class="dashboard-card">
+                    <div class="section-title">
+                        <i class="fas fa-plus-circle"></i>
+                        <h2>Daily Activity Log</h2>
+                    </div>
+                    
+                    <!-- Tab Navigation -->
+                    <div class="tabs-container">
+                        <button class="tab-btn active" data-tab="conversions">Conversions & Signups</button>
+                        <button class="tab-btn" data-tab="bulk">Bulk Activity Summary</button>
+                    </div>
+                    
+                    <!-- Conversions & Signups Tab -->
+                    <div class="tab-content active" id="conversions-tab">
+                        <div class="form-container">
+                            <div class="form-column">
+                                <div class="form-card">
+                                    <div class="form-group">
+                                        <label for="rep-select">Representative</label>
+                                        <select id="rep-select" class="form-control">
+                                            <option value="Sophia">Sophia</option>
+                                            <option value="Stella">Stella</option>
+                                            <option value="Somto">Somto</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="client-name">Client Name</label>
+                                        <input type="text" id="client-name" class="form-control" placeholder="Enter client name">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="client-status">Client Status</label>
+                                        <select id="client-status" class="form-control">
+                                            <option value="Active">Active</option>
+                                            <option value="Inactive">Inactive</option>
+                                            <option value="Semi-active">Semi-active</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="contact-method">Contact Method</label>
+                                        <select id="contact-method" class="form-control">
+                                            <option value="Call">Phone Call</option>
+                                            <option value="Text">Text Message</option>
+                                            <option value="Email">Email</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-column">
+                                <div class="form-card">
+                                    <div class="form-group">
+                                        <label for="phone-number">Phone Number</label>
+                                        <div class="phone-verification">
+                                            <input type="tel" id="phone-number" class="form-control" placeholder="+1 (555) 123-4567">
+                                            <button class="verify-btn" id="verify-phone">
+                                                <i class="fas fa-check"></i> Verify
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="broker-signup">Broker Signup</label>
+                                        <select id="broker-signup" class="form-control">
+                                            <option value="None">No signup</option>
+                                            <option value="HFM">HFM Broker</option>
+                                            <option value="Deriv">Deriv Broker</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="conversion">Mentorship Conversion</label>
+                                        <select id="conversion" class="form-control">
+                                            <option value="No">No conversion</option>
+                                            <option value="Yes">Payment received</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="notes">Activity Notes</label>
+                                        <textarea id="notes" class="form-control" rows="3" placeholder="Enter details about the follow-up"></textarea>
+                                    </div>
+                                </div>
+                                
+                                <button class="btn" id="add-activity">
+                                    <i class="fas fa-plus"></i> Add Verified Activity
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Bulk Activity Summary Tab -->
+                    <div class="tab-content" id="bulk-tab">
+                        <div class="form-container">
+                            <div class="form-column">
+                                <div class="form-card">
+                                    <div class="form-group">
+                                        <label for="bulk-rep">Representative</label>
+                                        <select id="bulk-rep" class="form-control">
+                                            <option value="Sophia">Sophia</option>
+                                            <option value="Stella">Stella</option>
+                                            <option value="Somto">Somto</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="bulk-stats">
+                                        <div class="bulk-stat">
+                                            <div class="bulk-stat-header">
+                                                <span class="bulk-stat-title">Calls Made</span>
+                                                <i class="fas fa-phone"></i>
+                                            </div>
+                                            <div class="bulk-stat-value" id="calls-value">0</div>
+                                            <div class="bulk-inputs">
+                                                <button class="bulk-btn" data-action="decrement" data-target="calls">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                                <input type="number" id="calls-input" class="bulk-input" min="0" value="0">
+                                                <button class="bulk-btn" data-action="increment" data-target="calls">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="bulk-stat">
+                                            <div class="bulk-stat-header">
+                                                <span class="bulk-stat-title">Texts Sent</span>
+                                                <i class="fas fa-comment"></i>
+                                            </div>
+                                            <div class="bulk-stat-value" id="texts-value">0</div>
+                                            <div class="bulk-inputs">
+                                                <button class="bulk-btn" data-action="decrement" data-target="texts">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                                <input type="number" id="texts-input" class="bulk-input" min="0" value="0">
+                                                <button class="bulk-btn" data-action="increment" data-target="texts">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bulk-stats">
+                                        <div class="bulk-stat">
+                                            <div class="bulk-stat-header">
+                                                <span class="bulk-stat-title">Call Responses</span>
+                                                <i class="fas fa-headset"></i>
+                                            </div>
+                                            <div class="bulk-stat-value" id="call-responses-value">0</div>
+                                            <div class="bulk-inputs">
+                                                <button class="bulk-btn" data-action="decrement" data-target="call-responses">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                                <input type="number" id="call-responses-input" class="bulk-input" min="0" value="0">
+                                                <button class="bulk-btn" data-action="increment" data-target="call-responses">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                            <div class="bulk-total">
+                                                <span id="no-response-calls">0</span> no response
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="bulk-stat">
+                                            <div class="bulk-stat-header">
+                                                <span class="bulk-stat-title">Text Responses</span>
+                                                <i class="fas fa-reply"></i>
+                                            </div>
+                                            <div class="bulk-stat-value" id="text-responses-value">0</div>
+                                            <div class="bulk-inputs">
+                                                <button class="bulk-btn" data-action="decrement" data-target="text-responses">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                                <input type="number" id="text-responses-input" class="bulk-input" min="0" value="0">
+                                                <button class="bulk-btn" data-action="increment" data-target="text-responses">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                            <div class="bulk-total">
+                                                <span id="no-response-texts">0</span> no response
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-note">
+                                        <i class="fas fa-info-circle"></i> Use this section to log bulk daily activities. 
+                                        For mentorship conversions and signups, use the "Conversions & Signups" tab.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-column">
+                                <div class="form-card">
+                                    <div class="form-group">
+                                        <label for="signups">Mentorship Signups</label>
+                                        <div class="bulk-inputs">
+                                            <button class="bulk-btn" data-action="decrement" data-target="signups">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <input type="number" id="signups-input" class="form-control" min="0" value="0" style="text-align: center;">
+                                            <button class="bulk-btn" data-action="increment" data-target="signups">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="conversions">Conversions (Paid)</label>
+                                        <div class="bulk-inputs">
+                                            <button class="bulk-btn" data-action="decrement" data-target="conversions">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <input type="number" id="conversions-input" class="form-control" min="0" value="0" style="text-align: center;">
+                                            <button class="bulk-btn" data-action="increment" data-target="conversions">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="broker-signups">Broker Signups</label>
+                                        <div class="bulk-stats" style="grid-template-columns: 1fr 1fr; margin-top: 15px;">
+                                            <div>
+                                                <label style="display: block; margin-bottom: 8px;">HFM</label>
+                                                <div class="bulk-inputs">
+                                                    <button class="bulk-btn" data-action="decrement" data-target="hfm-signups">
+                                                        <i class="fas fa-minus"></i>
+                                                    </button>
+                                                    <input type="number" id="hfm-signups-input" class="bulk-input" min="0" value="0">
+                                                    <button class="bulk-btn" data-action="increment" data-target="hfm-signups">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label style="display: block; margin-bottom: 8px;">Deriv</label>
+                                                <div class="bulk-inputs">
+                                                    <button class="bulk-btn" data-action="decrement" data-target="deriv-signups">
+                                                        <i class="fas fa-minus"></i>
+                                                    </button>
+                                                    <input type="number" id="deriv-signups-input" class="bulk-input" min="0" value="0">
+                                                    <button class="bulk-btn" data-action="increment" data-target="deriv-signups">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="bulk-notes">Summary Notes</label>
+                                        <textarea id="bulk-notes" class="form-control" rows="3" placeholder="Enter any important notes about today's activities"></textarea>
+                                    </div>
+                                </div>
+                                
+                                <button class="btn" id="save-bulk">
+                                    <i class="fas fa-save"></i> Save Daily Summary
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn summary-btn" id="send-summary">
+                        <i class="fas fa-paper-plane"></i> Submit Daily Summary to CEO
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="notification" id="notification">
+            <i class="fas fa-paper-plane"></i>
+            <div>
+                <h3 style="margin-bottom: 5px;">Daily Summary Submitted!</h3>
+                <p>Your daily performance report has been sent to trade2retire95@gmail.com</p>
+                <p style="margin-top: 10px; font-size: 14px;">CEO will receive a detailed report with all your activities</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set current date
+        const now = new Date();
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+        
+        // Initialize charts
+        const contactCtx = document.getElementById('contactChart').getContext('2d');
+        const contactChart = new Chart(contactCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Sophia', 'Stella', 'Somto'],
+                datasets: [{
+                    label: 'Calls Made',
+                    data: [24, 16, 28],
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Texts Sent',
+                    data: [18, 22, 14],
+                    backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#a8b2d1'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#8892b0'
+                        },
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#8892b0'
+                        },
+                        grid: {
+                            color: 'rgba(100, 255, 218, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        const conversionCtx = document.getElementById('conversionChart').getContext('2d');
+        const conversionChart = new Chart(conversionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['HFM Signups', 'Deriv Signups', 'Mentorship'],
+                datasets: [{
+                    data: [42, 38, 21],
+                    backgroundColor: [
+                        'rgba(111, 66, 193, 0.7)',
+                        'rgba(232, 62, 140, 0.7)',
+                        'rgba(23, 162, 184, 0.7)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#a8b2d1'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Tab switching functionality
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all buttons and contents
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked button
+                btn.classList.add('active');
+                
+                // Show corresponding content
+                const tabId = btn.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+        
+        // Bulk activity counters
+        const bulkInputs = document.querySelectorAll('.bulk-input');
+        
+        bulkInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const target = this.id.replace('-input', '-value');
+                document.getElementById(target).textContent = this.value;
+                calculateNoResponse();
+            });
+        });
+        
+        // Increment/decrement buttons
+        document.querySelectorAll('.bulk-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const action = this.getAttribute('data-action');
+                const target = this.getAttribute('data-target');
+                const input = document.getElementById(`${target}-input`);
+                let value = parseInt(input.value) || 0;
+                
+                if (action === 'increment') {
+                    value++;
+                } else if (action === 'decrement' && value > 0) {
+                    value--;
+                }
+                
+                input.value = value;
+                document.getElementById(`${target}-value`).textContent = value;
+                
+                if (target === 'calls' || target === 'call-responses' || 
+                    target === 'texts' || target === 'text-responses') {
+                    calculateNoResponse();
+                }
+            });
+        });
+        
+        // Calculate no response numbers
+        function calculateNoResponse() {
+            const callsMade = parseInt(document.getElementById('calls-input').value) || 0;
+            const callResponses = parseInt(document.getElementById('call-responses-input').value) || 0;
+            const textsSent = parseInt(document.getElementById('texts-input').value) || 0;
+            const textResponses = parseInt(document.getElementById('text-responses-input').value) || 0;
+            
+            document.getElementById('no-response-calls').textContent = callsMade - callResponses;
+            document.getElementById('no-response-texts').textContent = textsSent - textResponses;
+        }
+        
+        // Phone verification functionality
+        document.getElementById('verify-phone').addEventListener('click', function() {
+            const phoneInput = document.getElementById('phone-number');
+            const phoneValue = phoneInput.value.trim();
+            
+            if (!phoneValue) {
+                alert('Please enter a phone number');
+                return;
+            }
+            
+            // Simple validation
+            const phoneRegex = /^\+?[0-9]{10,15}$/;
+            const cleanedPhone = phoneValue.replace(/[^\d+]/g, '');
+            
+            if (!phoneRegex.test(cleanedPhone)) {
+                alert('Please enter a valid phone number (10-15 digits)');
+                return;
+            }
+            
+            // Format phone number
+            const formattedPhone = formatPhoneNumber(cleanedPhone);
+            phoneInput.value = formattedPhone;
+            
+            // Show verification in progress
+            const verifyBtn = this;
+            verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying';
+            verifyBtn.disabled = true;
+            
+            // Simulate verification process
+            setTimeout(() => {
+                verifyBtn.innerHTML = '<i class="fas fa-check"></i> Verified';
+                verifyBtn.style.background = 'linear-gradient(135deg, #28a745, #1e7e34)';
+                phoneInput.style.borderColor = '#28a745';
+            }, 2000);
+        });
+        
+        function formatPhoneNumber(phone) {
+            if (phone.length === 10) {
+                return `+1 (${phone.substring(0,3)}) ${phone.substring(3,6)}-${phone.substring(6)}`;
+            }
+            if (phone.length === 11 && phone.startsWith('1')) {
+                return `+1 (${phone.substring(1,4)}) ${phone.substring(4,7)}-${phone.substring(7)}`;
+            }
+            return phone;
+        }
+        
+        // Add activity functionality
+        document.getElementById('add-activity').addEventListener('click', function() {
+            const rep = document.getElementById('rep-select').value;
+            const clientName = document.getElementById('client-name').value;
+            const status = document.getElementById('client-status').value;
+            const method = document.getElementById('contact-method').value;
+            const phone = document.getElementById('phone-number').value;
+            const broker = document.getElementById('broker-signup').value;
+            const conversion = document.getElementById('conversion').value;
+            const notes = document.getElementById('notes').value;
+            
+            if (!clientName || !notes || !phone) {
+                alert('Please fill in all required fields and verify phone number');
+                return;
+            }
+            
+            // Create success notification
+            alert(`Activity added for ${rep} with ${clientName} (${status}) via ${method}\nBroker: ${broker}\nConversion: ${conversion}`);
+            
+            // Reset form
+            document.getElementById('client-name').value = '';
+            document.getElementById('phone-number').value = '';
+            document.getElementById('notes').value = '';
+            
+            // Reset verify button
+            const verifyBtn = document.getElementById('verify-phone');
+            verifyBtn.innerHTML = '<i class="fas fa-check"></i> Verify';
+            verifyBtn.style.background = 'linear-gradient(135deg, var(--accent-blue), var(--primary-blue))';
+            verifyBtn.disabled = false;
+        });
+        
+        // Save bulk summary
+        document.getElementById('save-bulk').addEventListener('click', function() {
+            const rep = document.getElementById('bulk-rep').value;
+            const calls = document.getElementById('calls-input').value;
+            const texts = document.getElementById('texts-input').value;
+            const callResponses = document.getElementById('call-responses-input').value;
+            const textResponses = document.getElementById('text-responses-input').value;
+            const signups = document.getElementById('signups-input').value;
+            const conversions = document.getElementById('conversions-input').value;
+            const hfmSignups = document.getElementById('hfm-signups-input').value;
+            const derivSignups = document.getElementById('deriv-signups-input').value;
+            
+            alert(`Daily summary saved for ${rep}:\nCalls: ${calls}\nTexts: ${texts}\nCall Responses: ${callResponses}\nText Responses: ${textResponses}\nSignups: ${signups}\nConversions: ${conversions}\nHFM Signups: ${hfmSignups}\nDeriv Signups: ${derivSignups}`);
+        });
+        
+        // Submit summary to CEO
+        document.getElementById('send-summary').addEventListener('click', function() {
+            const rep = document.getElementById('rep-select').value;
+            const notification = document.getElementById('notification');
+            
+            notification.classList.add('show');
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+            
+            // In a real implementation, this would trigger an email to the CEO
+            console.log(`Sending ${rep}'s daily summary to trade2retire95@gmail.com`);
+        });
+    </script>
+</body>
+</html>
